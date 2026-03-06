@@ -21,14 +21,20 @@ jobs:
           script: |
             sudo git config --global --add safe.directory /var/www/html
             cd /var/www/html
-            # Si le dossier .git n'existe pas, on clone. Sinon, on refresh.
+            
+            # 1. Si le dossier .git n'est pas là, on clone d'abord
             if [ ! -d ".git" ]; then
               sudo git clone https://github.com/Scorpierre/my-azure-crm.git .
-            else
-              sudo git fetch --all
-              sudo git reset --hard origin/main
+              sudo chown -R adminuser:adminuser /var/www/html
             fi
+
+            # 2. On récupère les nouveautés
+            sudo git fetch --all
+            sudo git reset --hard origin/main
             
+            # 3. On build et on lance
             sudo npm install
             sudo npm run build
-            pm2 restart all || pm2 start dist/main.js --name "nest-app"
+            
+            # On vérifie si PM2 tourne déjà, sinon on lance le premier démarrage
+            sudo pm2 restart all || sudo pm2 start dist/main.js --name "nest-app"
