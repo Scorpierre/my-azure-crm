@@ -20,22 +20,31 @@ jobs:
           username: adminuser
           key: ${{ secrets.SSH_PRIVATE_KEY_VM_DEV }}
           script: |
-            sudo git config --global --add safe.directory /var/www/html
+            # 1. On s'assure d'être au bon endroit avec les bons droits
+            sudo mkdir -p /var/www/html
+            sudo chown -R adminuser:adminuser /var/www/html
             cd /var/www/html
-            
-            # 1. Si le dossier .git n'est pas là, on clone d'abord
+
+            # 2. Nettoyage si le dossier n'est pas un repo Git
             if [ ! -d ".git" ]; then
-              sudo git clone https://github.com/Scorpierre/my-azure-crm.git .
-              sudo chown -R adminuser:adminuser /var/www/html
+              echo "Le dossier n'est pas un repo Git. Nettoyage en cours..."
+              # On supprime tout (y compris l'index.html par défaut de Nginx)
+              rm -rf * rm -rf .* 2>/dev/null || true
+              git clone https://github.com/${{ github.repository }}.git .
+            else
+              echo "Repo existant, mise à jour..."
+              git fetch origin main
+              git reset --hard origin/main
             fi
 
-            # 2. On récupère les nouveautés
-            sudo git fetch --all
-            sudo git reset --hard origin/main
-            
-            # 3. On build et on lance
-            sudo npm install
-            sudo npm run build
-            
-            # On vérifie si PM2 tourne déjà, sinon on lance le premier démarrage
-            sudo pm2 restart all || sudo pm2 start dist/main.js --name "nest-app"
+            # 3. Installation et Build
+            npm install
+            npm run build
+
+            # 4. Gestion PM2 (On utilise le chemin absolu pour être sûr)
+            if pm2 list | grep -q "nest-app"; then
+              pm2 restart nest-app
+            else
+              pm2 start dist/main.js --name "nest-app"
+            fi
+            pm2 save
