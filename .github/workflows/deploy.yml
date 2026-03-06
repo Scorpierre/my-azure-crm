@@ -15,9 +15,9 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.VM_IP }}
+          host: ${{ secrets.VM_IP_VM_DEV }}
           username: adminuser
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY_VM_DEV }}
           script: |
             cd /var/www/html
             sudo git pull origin main
