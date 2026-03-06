@@ -18,7 +18,7 @@ jobs:
           host: ${{ secrets.VM_IP_VM_DEV }}
           username: adminuser
           key: ${{ secrets.SSH_PRIVATE_KEY_VM_DEV }}
-        script: |
+          script: |
             cd /var/www/html
             sudo git fetch --all
             sudo git reset --hard origin/main
