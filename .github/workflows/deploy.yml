@@ -1,0 +1,25 @@
+name: Deploy to Azure Dev VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VM_IP }}
+          username: adminuser
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/html
+            sudo git pull origin main
+            sudo chown -R www-data:www-data /var/www/html
+            sudo chmod -R 755 /var/www/html
