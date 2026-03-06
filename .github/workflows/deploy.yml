@@ -18,8 +18,8 @@ jobs:
           host: ${{ secrets.VM_IP_VM_DEV }}
           username: adminuser
           key: ${{ secrets.SSH_PRIVATE_KEY_VM_DEV }}
-          script: |
+        script: |
             cd /var/www/html
-            sudo git pull origin main
+            sudo git fetch --all
+            sudo git reset --hard origin/main
             sudo chown -R www-data:www-data /var/www/html
-            sudo chmod -R 755 /var/www/html
